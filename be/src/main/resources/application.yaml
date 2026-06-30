@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: be
+
+aisstream:
+  api-key: ${AISSTREAM_API_KEY}
+  ws-url: wss://stream.aisstream.io/v0/stream

@@ -1,0 +1,44 @@
+### Backend (be/) ###
+be/HELP.md
+be/.gradle
+be/build/
+!be/gradle/wrapper/gradle-wrapper.jar
+!be/**/src/main/**/build/
+!be/**/src/test/**/build/
+
+### STS ###
+be/.apt_generated
+be/.classpath
+be/.factorypath
+be/.project
+be/.settings
+be/.springBeans
+be/.sts4-cache
+be/bin/
+!be/**/src/main/**/bin/
+!be/**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+be/.idea
+be/*.iws
+be/*.iml
+be/*.ipr
+be/out/
+!be/**/src/main/**/out/
+!be/**/src/test/**/out/
+
+### NetBeans ###
+be/nbproject/private/
+be/nbbuild/
+be/dist/
+be/nbdist/
+be/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### env
+.env
+
+### .claude
+.claude
