@@ -16,6 +16,7 @@
   ㄴ 깃허브 : https://aisstream.io/documentation
   ㄴ API 정의 : https://github.com/aisstream/ais-message-models
   ㄴ 예제 : https://github.com/aisstream/example
+  ㄴ API Key : a89b84973b662dbabc9ea8c1fdf6307f6fe3f9e4
 4. 
 
 ## 참가 인원
