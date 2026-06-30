@@ -9,7 +9,14 @@
 2. 추가필요
 - 업무 간소화 관련 추가 기능이 필요(임팩트 부족)
 - 자동번역기능, 선박/항공편 관련 기상정보 확인 및 알람 기능
-3. 
+
+3. Reference
+- Web socket API 기반 선박 경로 무료 추적
+  ㄴ 홈 페이지 : https://aisstream.io/
+  ㄴ 깃허브 : https://aisstream.io/documentation
+  ㄴ API 정의 : https://github.com/aisstream/ais-message-models
+  ㄴ 예제 : https://github.com/aisstream/example
+4. 
 
 ## 참가 인원
 
