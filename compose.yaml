@@ -1,15 +1,14 @@
 services:
-  mysql:
-    image: 'mysql:latest'
+  postgres:
+    image: 'postgres:16'
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
+      - POSTGRES_DB=cargo_tracker
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=secret
     ports:
-      - '3306:3306'
+      - '5432:5432'
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "myuser", "-psecret"]
+      test: ["CMD-SHELL", "pg_isready -U myuser -d cargo_tracker"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,10 +19,10 @@ services:
       - '8080:8080'
     environment:
       - AISSTREAM_API_KEY=${AISSTREAM_API_KEY}
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mydatabase
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cargo_tracker
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
       - SPRING_DOCKER_COMPOSE_ENABLED=false
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
