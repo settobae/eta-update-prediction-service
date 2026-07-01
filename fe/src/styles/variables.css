@@ -1,0 +1,31 @@
+:root {
+  /* Primary */
+  --color-primary:       #10205E;
+  --color-primary-hover: #1a3280;
+  --color-primary-light: #dde2f0;
+
+  /* Background */
+  --color-bg:      #f4f6fb;
+  --color-surface: #ffffff;
+
+  /* Border */
+  --color-border: #dde2f0;
+
+  /* Text */
+  --color-text:           #1a1f36;
+  --color-text-secondary: #6b7280;
+  --color-text-on-primary: #ffffff;
+
+  /* Status */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
+
+  /* Cargo list item status */
+  --color-status-done:      #f0f0f0;  /* ata 있음 - 완료 */
+  --color-status-done-text: #9ca3af;
+  --color-status-transit:   #ffffff;  /* atd 있고 ata 없음 - 운송 중 */
+  --color-status-pending:   #f8f9fc;  /* atd 없음 - 출발 전 */
+  --color-status-delayed:   #fef2f2;  /* eta 경과 & ata 없음 - 지연 */
+  --color-status-delayed-border: #fca5a5;
+}

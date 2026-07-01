@@ -1,0 +1,72 @@
+.cargo-item-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cargo-item-input__header {
+  display: grid;
+  grid-template-columns: 1fr 80px 32px;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding: 0 2px;
+}
+
+.cargo-item-input__row {
+  display: grid;
+  grid-template-columns: 1fr 80px 32px;
+  gap: 8px;
+  align-items: center;
+}
+
+.cargo-item-input__row input {
+  padding: 7px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.cargo-item-input__row input:focus {
+  border-color: var(--color-primary);
+}
+
+.btn-remove {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-remove:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.btn-remove:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.btn-add-item {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+  background: none;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.btn-add-item:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}

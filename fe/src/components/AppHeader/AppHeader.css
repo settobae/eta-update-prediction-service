@@ -1,0 +1,15 @@
+.app-header {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.app-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}

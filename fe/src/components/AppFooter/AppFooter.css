@@ -1,0 +1,11 @@
+.app-footer {
+  flex-shrink: 0;
+  height: 52px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}

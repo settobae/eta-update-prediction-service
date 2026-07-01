@@ -1,25 +1,20 @@
 import './App.css'
+import AppHeader from './components/AppHeader/AppHeader'
+import CargoListPanel from './components/CargoListPanel/CargoListPanel'
+import CargoMainPanel from './components/CargoMainPanel/CargoMainPanel'
+import AppFooter from './components/AppFooter/AppFooter'
+import Toast from './components/Toast/Toast'
 
 function App() {
   return (
     <div className="app-layout">
-      <header className="app-header">
-        <h1>Cargo Tracker</h1>
-      </header>
-
+      <AppHeader />
       <div className="app-body">
-        <aside className="cargo-list-panel">
-          {/* CargoList */}
-        </aside>
-
-        <main className="cargo-main-panel">
-          {/* CargoDetail | CargoForm */}
-        </main>
+        <CargoListPanel />
+        <CargoMainPanel />
       </div>
-
-      <footer className="app-footer">
-        {/* Footer actions */}
-      </footer>
+      <AppFooter />
+      <Toast />
     </div>
   )
 }

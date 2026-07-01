@@ -1,0 +1,123 @@
+.cargo-form {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cargo-form__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cargo-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cargo-form__section > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.cargo-form__section input[type="text"],
+.cargo-form__section input[type="date"] {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.cargo-form__section input:focus {
+  border-color: var(--color-primary);
+}
+
+.cargo-form__route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cargo-form__route input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.cargo-form__route input:focus {
+  border-color: var(--color-primary);
+}
+
+.cargo-form__arrow {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.cargo-form__dates {
+  display: flex;
+  gap: 16px;
+}
+
+.cargo-form__date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.cargo-form__date-field span {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.cargo-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.btn-cancel {
+  padding: 8px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text);
+}
+
+.btn-submit {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-primary);
+  font-size: 14px;
+  color: var(--color-text-on-primary);
+  cursor: pointer;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

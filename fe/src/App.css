@@ -4,27 +4,8 @@
   height: 100vh;
 }
 
-.app-header {
-  flex-shrink: 0;
-}
-
 .app-body {
   flex: 1;
   display: flex;
   overflow: hidden;
-}
-
-.cargo-list-panel {
-  width: 280px;
-  flex-shrink: 0;
-  overflow-y: auto;
-}
-
-.cargo-main-panel {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.app-footer {
-  flex-shrink: 0;
 }

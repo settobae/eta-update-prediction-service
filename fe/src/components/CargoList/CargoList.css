@@ -1,0 +1,15 @@
+.cargo-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cargo-list-state {
+  padding: 24px 16px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.cargo-list-state--error {
+  color: var(--color-danger);
+}

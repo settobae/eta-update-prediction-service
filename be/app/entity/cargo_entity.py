@@ -14,7 +14,7 @@ class Cargo(Document):
 
     projectName: str
     from_: str = Field(alias="from")
-    stopover: str
+    stopover: Optional[str] = None
     to: str
     items: list[CargoItem]
     atd: Optional[datetime] = None

@@ -29,6 +29,7 @@ services:
     environment:
       MONGODB_URI: ${MONGODB_URI}
       MONGODB_DB: ${MONGODB_DB}
+      CORS_ORIGINS: ${CORS_ORIGINS}
     depends_on:
       mongo:
         condition: service_healthy
