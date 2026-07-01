@@ -3,6 +3,8 @@
   flex-direction: column;
   gap: 24px;
   max-width: 720px;
+  flex: 1;
+  min-height: 0;
 }
 
 /* header */
