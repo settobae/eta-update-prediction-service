@@ -44,6 +44,8 @@ services:
       - "5173:5173"
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+      VITE_MAPTILER_API_KEY: ${VITE_MAPTILER_API_KEY}
+      VITE_MAPTILER_MAP_ID: ${VITE_MAPTILER_MAP_ID}
     volumes:
       - ./fe:/app
       - /app/node_modules

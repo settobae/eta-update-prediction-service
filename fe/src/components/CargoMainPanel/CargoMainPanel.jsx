@@ -1,5 +1,6 @@
 import { useCargoStore } from '../../store/useCargoStore'
 import CargoForm from '../CargoForm/CargoForm'
+import CargoDetail from '../CargoDetail/CargoDetail'
 import './CargoMainPanel.css'
 
 function CargoMainPanel() {
@@ -11,7 +12,7 @@ function CargoMainPanel() {
         <div className="cargo-main-panel__empty">화물을 선택하거나 추가하세요.</div>
       )}
       {(panelMode === 'add' || panelMode === 'edit') && <CargoForm />}
-      {panelMode === 'detail' && <div>{/* CargoDetail */}</div>}
+      {panelMode === 'detail' && <CargoDetail />}
     </main>
   )
 }

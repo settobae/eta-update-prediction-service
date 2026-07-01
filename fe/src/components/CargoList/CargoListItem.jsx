@@ -1,19 +1,8 @@
+import { getCargoStatus, formatDate } from '../../utils/cargoUtils'
 import './CargoListItem.css'
 
-const getStatus = (cargo) => {
-  if (cargo.ata) return 'done'
-  if (cargo.eta && new Date(cargo.eta) < new Date()) return 'delayed'
-  if (cargo.atd) return 'transit'
-  return 'pending'
-}
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return null
-  return new Date(dateStr).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
-}
-
 function CargoListItem({ cargo, isSelected, onClick }) {
-  const status = getStatus(cargo)
+  const status = getCargoStatus(cargo)
   const arrivalLabel = cargo.ata ? 'ATA' : 'ETA'
   const arrivalDate = formatDate(cargo.ata ?? cargo.eta)
 
