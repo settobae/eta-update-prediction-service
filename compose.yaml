@@ -1,28 +1,38 @@
 services:
-  postgres:
-    image: 'postgres:16'
-    environment:
-      - POSTGRES_DB=cargo_tracker
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=secret
+  mongo:
+    image: mongo:7
+    container_name: cargo-mongo
+    restart: unless-stopped
     ports:
-      - '5432:5432'
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: cargo_tracker
+    volumes:
+      - mongo-data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d cargo_tracker"]
-      interval: 5s
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 10s
 
-  backend:
-    build: ./be
+  be:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: cargo-be
+    restart: unless-stopped
     ports:
-      - '8080:8080'
+      - "8000:8000"
+    env_file:
+      - ./be/.env
     environment:
-      - AISSTREAM_API_KEY=${AISSTREAM_API_KEY}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cargo_tracker
-      - SPRING_DATASOURCE_USERNAME=myuser
-      - SPRING_DATASOURCE_PASSWORD=secret
-      - SPRING_DOCKER_COMPOSE_ENABLED=false
+      MONGODB_URI: mongodb://root:root@mongo:27017
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
+
+volumes:
+  mongo-data:
