@@ -35,10 +35,36 @@ be/nbdist/
 be/.nb-gradle/
 
 ### VS Code ###
-.vscode/
+be/.vscode/
 
 ### env
 .env
 
 ### .claude
 .claude
+
+### Frontend (fe/) ###
+fe/node_modules
+fe/dist
+fe/dist-ssr
+fe/*.local
+
+# Logs
+fe/logs
+fe/*.log
+fe/npm-debug.log*
+fe/yarn-debug.log*
+fe/yarn-error.log*
+fe/pnpm-debug.log*
+fe/lerna-debug.log*
+
+# Editor directories and files
+fe/.vscode/*
+!fe/.vscode/extensions.json
+fe/.idea
+fe/.DS_Store
+fe/*.suo
+fe/*.ntvs*
+fe/*.njsproj
+fe/*.sln
+fe/*.sw?
