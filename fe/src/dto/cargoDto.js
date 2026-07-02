@@ -24,3 +24,14 @@ export const toCargoPayload = (form) => ({
   eta: form.eta || null,
   ata: form.ata || null,
 })
+
+export const toCargoForm = (cargo) => ({
+  projectName: cargo.projectName,
+  from: cargo.from,
+  stopover: cargo.stopover ?? '',
+  to: cargo.to,
+  items: cargo.items.map((item) => ({ ...item })),
+  atd: cargo.atd ?? '',
+  eta: cargo.eta ?? '',
+  ata: cargo.ata ?? '',
+})

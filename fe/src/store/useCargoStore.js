@@ -16,6 +16,7 @@ export const useCargoStore = create((set, get) => ({
   error: null,
   notification: null,
   formOpen: false,
+  editingCargo: null,
 
   selectCargo: (cargo) => set({ selectedCargo: cargo, panelMode: 'detail' }),
   setPanelMode: (mode) => set({ panelMode: mode }),
@@ -23,6 +24,8 @@ export const useCargoStore = create((set, get) => ({
   clearNotification: () => set({ notification: null }),
   toggleForm: () => set((s) => ({ formOpen: !s.formOpen })),
   closeForm: () => set({ formOpen: false }),
+  openEditForm: (cargo) => set({ editingCargo: cargo }),
+  closeEditForm: () => set({ editingCargo: null }),
 
   fetchCargos: async () => {
     set({ loading: true, error: null });

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCargoStore } from '../../store/useCargoStore'
-import { EMPTY_CARGO_FORM, toCargoPayload } from '../../dto/cargoDto'
+import { EMPTY_CARGO_FORM, toCargoForm, toCargoPayload } from '../../dto/cargoDto'
 import CargoItemInput from './CargoItemInput'
 import './CargoForm.css'
 
@@ -30,32 +30,38 @@ function DateTimeField({ label, value, onChange }) {
   )
 }
 
-function CargoForm() {
-  const { addCargo, closeForm } = useCargoStore()
-  const [form, setForm] = useState(createEmptyForm)
+function CargoForm({ cargo = null, onClose }) {
+  const { addCargo, editCargo, closeForm } = useCargoStore()
+  const close = onClose ?? closeForm
+  const [form, setForm] = useState(() => (cargo ? toCargoForm(cargo) : createEmptyForm()))
   const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }))
 
   const handleCancel = () => {
-    setForm(createEmptyForm())
-    closeForm()
+    if (!cargo) setForm(createEmptyForm())
+    close()
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
     try {
-      await addCargo(toCargoPayload(form))
-      setForm(createEmptyForm())
-      closeForm()
+      const payload = toCargoPayload(form)
+      if (cargo) {
+        await editCargo(cargo.id, payload)
+      } else {
+        await addCargo(payload)
+        setForm(createEmptyForm())
+      }
+      close()
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <form className="cargo-form" onSubmit={handleSubmit}>
+    <form className={`cargo-form${cargo ? ' cargo-form--modal' : ''}`} onSubmit={handleSubmit}>
       <div className="cargo-form__section cargo-form__section--project">
         <label>프로젝트명</label>
         <input
@@ -116,7 +122,7 @@ function CargoForm() {
           취소
         </button>
         <button type="submit" className="btn-submit" disabled={submitting}>
-          {submitting ? '저장 중...' : '저장'}
+          {submitting ? '저장 중...' : cargo ? '수정 완료' : '저장'}
         </button>
       </div>
     </form>

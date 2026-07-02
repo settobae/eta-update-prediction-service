@@ -2,6 +2,7 @@ import './App.css'
 import { useCargoStore } from './store/useCargoStore'
 import AppHeader from './components/AppHeader/AppHeader'
 import CargoForm from './components/CargoForm/CargoForm'
+import CargoFormModal from './components/CargoForm/CargoFormModal'
 import CargoListPanel from './components/CargoListPanel/CargoListPanel'
 import CargoMainPanel from './components/CargoMainPanel/CargoMainPanel'
 import AppFooter from './components/AppFooter/AppFooter'
@@ -19,6 +20,7 @@ function App() {
         <CargoMainPanel />
       </div>
       <AppFooter />
+      <CargoFormModal />
       <Toast />
     </div>
   )
