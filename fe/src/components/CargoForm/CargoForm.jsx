@@ -6,6 +6,30 @@ import './CargoForm.css'
 
 const createEmptyForm = () => ({ ...EMPTY_CARGO_FORM, items: [{ item: '', ea: 1 }] })
 
+const combineDateTime = (date, time) => (date ? `${date}T${time || '00:00'}` : '')
+
+function DateTimeField({ label, value, onChange }) {
+  const [date = '', time = ''] = value ? value.split('T') : []
+
+  return (
+    <div className="cargo-form__date-field">
+      <span>{label}</span>
+      <div className="cargo-form__datetime">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => onChange(combineDateTime(e.target.value, time))}
+        />
+        <input
+          type="time"
+          value={time}
+          onChange={(e) => onChange(combineDateTime(date, e.target.value))}
+        />
+      </div>
+    </div>
+  )
+}
+
 function CargoForm() {
   const { addCargo, closeForm } = useCargoStore()
   const [form, setForm] = useState(createEmptyForm)
@@ -81,30 +105,9 @@ function CargoForm() {
       <div className="cargo-form__section cargo-form__section--dates">
         <label>일정</label>
         <div className="cargo-form__dates">
-          <div className="cargo-form__date-field">
-            <span>ATD</span>
-            <input
-              type="date"
-              value={form.atd}
-              onChange={(e) => handleChange('atd', e.target.value)}
-            />
-          </div>
-          <div className="cargo-form__date-field">
-            <span>ETA</span>
-            <input
-              type="date"
-              value={form.eta}
-              onChange={(e) => handleChange('eta', e.target.value)}
-            />
-          </div>
-          <div className="cargo-form__date-field">
-            <span>ATA (선택)</span>
-            <input
-              type="date"
-              value={form.ata}
-              onChange={(e) => handleChange('ata', e.target.value)}
-            />
-          </div>
+          <DateTimeField label="ATD" value={form.atd} onChange={(v) => handleChange('atd', v)} />
+          <DateTimeField label="ETA" value={form.eta} onChange={(v) => handleChange('eta', v)} />
+          <DateTimeField label="ATA (선택)" value={form.ata} onChange={(v) => handleChange('ata', v)} />
         </div>
       </div>
 

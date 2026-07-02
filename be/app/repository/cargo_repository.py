@@ -8,10 +8,6 @@ from app.dto.cargo_dto import CargoRequest
 async def create(dto: CargoRequest) -> Cargo:
     now = datetime.now(timezone.utc)
     data = dto.model_dump()
-    for field in ("atd", "eta", "ata"):
-        if data.get(field) is not None:
-            val = data[field]
-            data[field] = datetime(val.year, val.month, val.day)
     cargo = Cargo(**data, add_at=now, updated_at=now)
     await cargo.insert()
     return cargo
@@ -45,10 +41,6 @@ async def update(cargo_id: str, dto: CargoRequest) -> Cargo | None:
         return None
 
     data = dto.model_dump()
-    for field in ("atd", "eta", "ata"):
-        if data.get(field) is not None:
-            val = data[field]
-            data[field] = datetime(val.year, val.month, val.day)
 
     for attr, value in data.items():
         setattr(cargo, attr, value)

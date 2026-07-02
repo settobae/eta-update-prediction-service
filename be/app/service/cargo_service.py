@@ -1,4 +1,3 @@
-from datetime import datetime
 from fastapi import HTTPException, status
 from app.entity.cargo_entity import Cargo
 from app.dto.cargo_dto import CargoRequest, CargoResponse
@@ -7,9 +6,6 @@ import app.repository.cargo_repository as cargo_repository
 
 def _to_dto(cargo: Cargo) -> CargoResponse:
     data = cargo.model_dump(exclude={"id", "revision_id"})
-    for field in ("atd", "eta", "ata"):
-        if isinstance(data.get(field), datetime):
-            data[field] = data[field].date()
     return CargoResponse(id=str(cargo.id), **data)
 
 

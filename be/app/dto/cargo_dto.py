@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from datetime import date, datetime
+from datetime import datetime
 from typing import Optional
 
 
@@ -16,9 +16,9 @@ class CargoRequest(BaseModel):
     stopover: Optional[str] = None
     to: str
     items: list[CargoItem]
-    atd: Optional[date] = None
-    eta: Optional[date] = None
-    ata: Optional[date] = None
+    atd: Optional[datetime] = None
+    eta: Optional[datetime] = None
+    ata: Optional[datetime] = None
 
 
 class CargoResponse(BaseModel):
@@ -30,8 +30,8 @@ class CargoResponse(BaseModel):
     stopover: Optional[str] = None
     to: str
     items: list[CargoItem]
-    atd: Optional[date] = None
-    eta: Optional[date] = None
-    ata: Optional[date] = None
+    atd: Optional[datetime] = None
+    eta: Optional[datetime] = None
+    ata: Optional[datetime] = None
     add_at: datetime
     updated_at: datetime

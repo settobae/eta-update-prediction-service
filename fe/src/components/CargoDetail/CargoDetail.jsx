@@ -3,6 +3,9 @@ import { getCargoStatus, STATUS_LABEL, formatDate } from '../../utils/cargoUtils
 import CargoMap from '../CargoMap/CargoMap'
 import './CargoDetail.css'
 
+const MAP_INITIAL_CENTER = [131.865, 37.243]
+const MAP_INITIAL_ZOOM = 3
+
 const getDelayText = (ata, eta) => {
   if (!ata || !eta) return null
   const days = Math.round((new Date(ata) - new Date(eta)) / (1000 * 60 * 60 * 24))
@@ -94,8 +97,8 @@ function CargoDetail() {
         from={cargo.from}
         stopover={cargo.stopover}
         to={cargo.to}
-        center={[131.865, 37.243]}
-        zoom={6}
+        center={MAP_INITIAL_CENTER}
+        zoom={MAP_INITIAL_ZOOM}
       />
 
     </div>
