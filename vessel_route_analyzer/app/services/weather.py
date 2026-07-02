@@ -10,14 +10,11 @@ logger = logging.getLogger(__name__)
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"
 
-# 해상 물류 기준 임계값
+# 해상 물류 기준 임계값 (지연 시간 산출은 app.services.delay_policy의 단일 기준을 따름)
 HIGH_WIND_MS = 17.2      # 강풍 (약 34kt, Beaufort 8 '갈전풍')
 HIGH_WAVE_M = 4.0
 MODERATE_WIND_MS = 10.8  # 약 21kt, Beaufort 6 '강풍'
 MODERATE_WAVE_M = 2.5
-
-HIGH_DELAY_HOURS = 24
-MODERATE_DELAY_HOURS = 12
 
 
 def _nearest_hour_index(times: list, target_utc: datetime, max_diff_hours: float = 24.0):
@@ -36,75 +33,82 @@ def _nearest_hour_index(times: list, target_utc: datetime, max_diff_hours: float
     return None
 
 
-async def _fetch_point_forecast(client: httpx.AsyncClient, lat: float, lon: float):
+async def _fetch_batch(client: httpx.AsyncClient, url: str, lats: list, lons: list, hourly_field: str):
+    """
+    여러 좌표를 콤마로 구분해 단 한 번의 요청으로 조회한다.
+    (좌표마다 개별 요청을 보내면 요청 수가 배로 늘어 Open-Meteo 요청 빈도 제한(429)에 걸리기 쉬움)
+    """
     try:
-        weather_resp, marine_resp = await asyncio.gather(
-            client.get(FORECAST_URL, params={
-                "latitude": lat, "longitude": lon,
-                "hourly": "windspeed_10m",
-                "forecast_days": 10,
-                "timezone": "UTC",
-            }),
-            client.get(MARINE_URL, params={
-                "latitude": lat, "longitude": lon,
-                "hourly": "wave_height",
-                "forecast_days": 10,
-                "timezone": "UTC",
-            }),
-        )
-        weather_resp.raise_for_status()
-        marine_resp.raise_for_status()
-        return weather_resp.json(), marine_resp.json()
+        resp = await client.get(url, params={
+            "latitude": ",".join(str(v) for v in lats),
+            "longitude": ",".join(str(v) for v in lons),
+            "hourly": hourly_field,
+            "forecast_days": 10,
+            "timezone": "UTC",
+        })
+        resp.raise_for_status()
+        data = resp.json()
+        # 좌표가 1개면 dict, 여러 개면 list로 반환됨 (Open-Meteo 사양)
+        return data if isinstance(data, list) else [data]
     except httpx.HTTPError as e:
-        logger.warning("기상 API 호출 실패 | lat=%s lon=%s err=%s", lat, lon, e)
+        logger.warning("기상 API 배치 호출 실패 | url=%s err=%s", url, e)
         return None
 
 
-async def get_weather_issues(points_with_eta: list) -> tuple:
+async def get_weather_issues(points_with_eta: list) -> list:
     """
     항로 대표 좌표별 예상 도착 시각을 기준으로 Open-Meteo 기상/파고 예보를 조회하여
     임계값을 넘는 지점을 위험 이슈로 변환한다. (뉴스 검색이 아닌 실측 기상 데이터 기반)
-    반환: (issues: list[dict], total_delay_hours: int)
+    좌표 전체를 배치 요청 2건(기상 1건 + 해양 1건)으로 한 번에 조회한다.
+    지연 시간 산출은 app.services.delay_policy의 단일 기준을 따르므로 여기서는 severity만 매긴다.
+    반환: issues: list[dict]
     """
-    issues = []
-    total_delay_hours = 0
+    if not points_with_eta:
+        return []
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        results = await asyncio.gather(
-            *[_fetch_point_forecast(client, p["lat"], p["lon"]) for p in points_with_eta]
+    lats = [p["lat"] for p in points_with_eta]
+    lons = [p["lon"] for p in points_with_eta]
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        weather_batch, marine_batch = await asyncio.gather(
+            _fetch_batch(client, FORECAST_URL, lats, lons, "windspeed_10m"),
+            _fetch_batch(client, MARINE_URL, lats, lons, "wave_height"),
         )
 
-    for point, data in zip(points_with_eta, results):
-        if not data:
-            continue
-        weather_json, marine_json = data
+    logger.info(
+        "기상 API 배치 조회 완료 | 지점=%d개 forecast_ok=%s marine_ok=%s",
+        len(points_with_eta), weather_batch is not None, marine_batch is not None
+    )
 
+    issues = []
+
+    for idx, point in enumerate(points_with_eta):
         try:
             arrive_dt = datetime.fromisoformat(point["arrive_at"]).astimezone(timezone.utc)
         except ValueError:
             continue
 
-        wind_hourly = weather_json.get("hourly", {})
-        wave_hourly = marine_json.get("hourly", {})
+        wind_hourly = weather_batch[idx].get("hourly", {}) if weather_batch and idx < len(weather_batch) else {}
+        wave_hourly = marine_batch[idx].get("hourly", {}) if marine_batch and idx < len(marine_batch) else {}
 
         wind_idx = _nearest_hour_index(wind_hourly.get("time", []), arrive_dt)
         wave_idx = _nearest_hour_index(wave_hourly.get("time", []), arrive_dt)
 
-        wind_kmh = wind_hourly.get("windspeed_10m", [])
+        wind_kmh_list = wind_hourly.get("windspeed_10m", [])
         wave_m_list = wave_hourly.get("wave_height", [])
 
-        wind_ms = (wind_kmh[wind_idx] / 3.6) if wind_idx is not None and wind_idx < len(wind_kmh) else None
+        wind_ms = (wind_kmh_list[wind_idx] / 3.6) if wind_idx is not None and wind_idx < len(wind_kmh_list) else None
         wave_m = wave_m_list[wave_idx] if wave_idx is not None and wave_idx < len(wave_m_list) else None
 
         if wind_ms is None and wave_m is None:
-            logger.info("좌표 (%.2f, %.2f) 예보 범위를 벗어나 기상 판단 생략", point["lat"], point["lon"])
+            logger.info("좌표 (%.2f, %.2f) 예보 데이터 없음/범위 초과로 기상 판단 생략", point["lat"], point["lon"])
             continue
 
-        severity, delay_hours = None, 0
+        severity = None
         if (wind_ms is not None and wind_ms >= HIGH_WIND_MS) or (wave_m is not None and wave_m >= HIGH_WAVE_M):
-            severity, delay_hours = "High", HIGH_DELAY_HOURS
+            severity = "High"
         elif (wind_ms is not None and wind_ms >= MODERATE_WIND_MS) or (wave_m is not None and wave_m >= MODERATE_WAVE_M):
-            severity, delay_hours = "Medium", MODERATE_DELAY_HOURS
+            severity = "Medium"
 
         if severity is None:
             continue
@@ -126,10 +130,9 @@ async def get_weather_issues(points_with_eta: list) -> tuple:
             "source_tier": "Tier 3",
             "verification_status": "verified",
         })
-        total_delay_hours += delay_hours
         logger.info(
             "기상 이슈 감지 | lat=%.2f lon=%.2f severity=%s wind_ms=%s wave_m=%s",
             point["lat"], point["lon"], severity, wind_ms, wave_m
         )
 
-    return issues, total_delay_hours
+    return issues

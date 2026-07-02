@@ -6,6 +6,8 @@ from datetime import datetime, timedelta, timezone
 from app.config import config
 from app.services.ai_verifier import AIVerificationEngine
 from app.services.weather import get_weather_issues
+from app.services.geo_hints import get_route_countries
+from app.services import delay_policy
 
 logger = logging.getLogger(__name__)
 
@@ -78,15 +80,6 @@ def calculate_points_eta(atd: str, eta: str, route_points: list, delay_hours: in
         
     return points_with_eta
 
-def _combined_risk_label(issues: list) -> str:
-    severities = {issue.get("severity") for issue in issues}
-    if "High" in severities:
-        return "높음 (경고 - High-Risk)"
-    if "Medium" in severities:
-        return "보통 (주의 - Alert)"
-    return "낮음 (안정)"
-
-
 async def analyze_route_issues(departure: str, destination: str, atd: str, eta: str, route_points: list) -> dict:
     """
     기상 이슈는 Open-Meteo 기상/해양 API에서, 지정학/항구정체 등 뉴스 기반 이슈는 Codex CLI
@@ -95,13 +88,20 @@ async def analyze_route_issues(departure: str, destination: str, atd: str, eta: 
     """
     # 기상 예보 조회 시점 산출을 위한 기준(지연 미반영) 도착 시각
     baseline_points = calculate_points_eta(atd, eta, route_points, delay_hours=0)
+    # 기상 조회와 항로 통과 국가 추정을 뉴스 검색 전에 병렬로 미리 진행해 전체 응답 시간을 단축
     weather_task = asyncio.create_task(get_weather_issues(baseline_points))
+    countries_task = asyncio.create_task(get_route_countries(route_points))
 
     engine = AIVerificationEngine(
         model_name=config.GEMINI_MODEL_NAME
     )
 
-    logger.info("Codex CLI 실행자/검수자 파이프라인 구동 시작 | departure=%s destination=%s", departure, destination)
+    countries = await countries_task
+
+    logger.info(
+        "Codex CLI 실행자/검수자 파이프라인 구동 시작 | departure=%s destination=%s countries=%s",
+        departure, destination, countries
+    )
 
     # AI 검증 수행 (예외 발생 대비 try-except)
     try:
@@ -109,9 +109,15 @@ async def analyze_route_issues(departure: str, destination: str, atd: str, eta: 
             departure=departure,
             destination=destination,
             eta_scheduled=eta,
-            route_points=route_points
+            route_points=route_points,
+            countries=countries
         )
-        logger.info("Codex CLI 실행자/검수자 검증 완료 | issues=%d개", len(raw_result.get("issues", [])))
+        logger.info(
+            "Codex CLI 실행자/검수자 검증 완료 | issues=%d개 실행자검색횟수=%s 검수자검색횟수=%s",
+            len(raw_result.get("issues", [])),
+            raw_result.get("executor_search_count"),
+            raw_result.get("reviewer_search_count"),
+        )
     except Exception as e:
         logger.error("Codex AI 분석 에러 (AIVerificationEngine 실패), 안전 fallback으로 전환 | %s", e)
         raw_result = {
@@ -128,21 +134,18 @@ async def analyze_route_issues(departure: str, destination: str, atd: str, eta: 
                     "verification_status": "corrected"
                 }
             ],
-            "total_delay_hours": 0,
-            "analysis_summary": "Codex CLI 기반 뉴스 위험 분석이 실패하여 해당 부분은 생략되었습니다."
         }
 
-    weather_issues, weather_delay_hours = await weather_task
-    logger.info(
-        "기상 API 이슈 조회 완료 | issues=%d개 weather_delay_hours=%d",
-        len(weather_issues), weather_delay_hours
-    )
+    weather_issues = await weather_task
+    logger.info("기상 API 이슈 조회 완료 | issues=%d개", len(weather_issues))
 
     news_issues = raw_result.get("issues", [])
-    news_delay_hours = int(raw_result.get("total_delay_hours", 0))
-
     combined_issues = weather_issues + news_issues
-    delay_hours = weather_delay_hours + news_delay_hours
+
+    # 지연 시간/위험도/종합 소견은 AI가 임의로 작성하지 않고, severity 기반 단일 판단 기준(delay_policy)으로 결정론적으로 산출
+    delay_hours = delay_policy.total_delay_hours(combined_issues)
+    delay_risk = delay_policy.combined_risk_label(combined_issues)
+    analysis_summary = delay_policy.build_analysis_summary(combined_issues, delay_hours)
 
     # KST 비례배분 예정 시각 산출 진행 로그 출력
     logger.info("KST 비례배분 도달 일정 산출 중 | atd=%s eta=%s", atd, eta)
@@ -156,9 +159,9 @@ async def analyze_route_issues(departure: str, destination: str, atd: str, eta: 
 
     result = {
         "issues": combined_issues,
-        "delay_risk": _combined_risk_label(combined_issues),
+        "delay_risk": delay_risk,
         "total_delay_hours": delay_hours,
-        "analysis_summary": raw_result.get("analysis_summary", "분석이 정상적으로 완료되었습니다."),
+        "analysis_summary": analysis_summary,
         "eta_adjusted": adjusted_dt.isoformat(),
         "route_points": points_with_eta,
     }
