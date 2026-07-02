@@ -4,18 +4,27 @@ import { EMPTY_CARGO_FORM, toCargoPayload } from '../../dto/cargoDto'
 import CargoItemInput from './CargoItemInput'
 import './CargoForm.css'
 
+const createEmptyForm = () => ({ ...EMPTY_CARGO_FORM, items: [{ item: '', ea: 1 }] })
+
 function CargoForm() {
-  const { addCargo, setPanelMode } = useCargoStore()
-  const [form, setForm] = useState({ ...EMPTY_CARGO_FORM, items: [{ item: '', ea: 1 }] })
+  const { addCargo, closeForm } = useCargoStore()
+  const [form, setForm] = useState(createEmptyForm)
   const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }))
+
+  const handleCancel = () => {
+    setForm(createEmptyForm())
+    closeForm()
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
     try {
       await addCargo(toCargoPayload(form))
+      setForm(createEmptyForm())
+      closeForm()
     } finally {
       setSubmitting(false)
     }
@@ -23,9 +32,7 @@ function CargoForm() {
 
   return (
     <form className="cargo-form" onSubmit={handleSubmit}>
-      <h2 className="cargo-form__title">화물 추가</h2>
-
-      <div className="cargo-form__section">
+      <div className="cargo-form__section cargo-form__section--project">
         <label>프로젝트명</label>
         <input
           type="text"
@@ -35,7 +42,7 @@ function CargoForm() {
         />
       </div>
 
-      <div className="cargo-form__section">
+      <div className="cargo-form__section cargo-form__section--route">
         <label>경로</label>
         <div className="cargo-form__route">
           <input
@@ -63,7 +70,7 @@ function CargoForm() {
         </div>
       </div>
 
-      <div className="cargo-form__section">
+      <div className="cargo-form__section cargo-form__section--items">
         <label>품목</label>
         <CargoItemInput
           items={form.items}
@@ -71,7 +78,7 @@ function CargoForm() {
         />
       </div>
 
-      <div className="cargo-form__section">
+      <div className="cargo-form__section cargo-form__section--dates">
         <label>일정</label>
         <div className="cargo-form__dates">
           <div className="cargo-form__date-field">
@@ -102,7 +109,7 @@ function CargoForm() {
       </div>
 
       <div className="cargo-form__actions">
-        <button type="button" className="btn-cancel" onClick={() => setPanelMode('idle')}>
+        <button type="button" className="btn-cancel" onClick={handleCancel}>
           취소
         </button>
         <button type="submit" className="btn-submit" disabled={submitting}>

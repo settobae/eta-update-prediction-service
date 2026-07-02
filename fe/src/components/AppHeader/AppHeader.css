@@ -19,3 +19,19 @@
   font-weight: 600;
   letter-spacing: 0.3px;
 }
+
+.app-header-add-btn {
+  margin-left: auto;
+  padding: 6px 16px;
+  border: 1px solid var(--color-text-on-primary);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-on-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app-header-add-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

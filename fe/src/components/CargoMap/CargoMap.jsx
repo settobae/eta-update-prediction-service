@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { maptilersdk, mapStyleUrl } from '../../api/mapClient'
-import '@maptiler/sdk/style.css'
+import '@maptiler/sdk/dist/maptiler-sdk.css'
 import './CargoMap.css'
 
 function CargoMap({ from, stopover, to, center, zoom }) {

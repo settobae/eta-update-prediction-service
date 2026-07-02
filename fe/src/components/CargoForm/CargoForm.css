@@ -1,34 +1,49 @@
 .cargo-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.cargo-form__title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text);
+  --field-width: 200px;
+  --group-width: calc(var(--field-width) * 3 + 24px);
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: minmax(340px, 440px) 1fr;
+  column-gap: 24px;
+  row-gap: 12px;
+  padding: 16px 25vw;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cargo-form__section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .cargo-form__section > label {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text-secondary);
 }
 
-.cargo-form__section input[type="text"],
-.cargo-form__section input[type="date"] {
-  padding: 12px 14px;
+.cargo-form__section--project input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.cargo-form__section input[type="date"] {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 14px;
   color: var(--color-text);
   background: var(--color-surface);
   outline: none;
@@ -39,18 +54,21 @@
 }
 
 .cargo-form__route {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
   align-items: center;
   gap: 10px;
+  width: var(--group-width);
 }
 
 .cargo-form__route input {
-  flex: 1;
+  width: 100%;
   min-width: 0;
-  padding: 12px 14px;
+  box-sizing: border-box;
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--color-text);
   background: var(--color-surface);
   outline: none;
@@ -67,7 +85,8 @@
 
 .cargo-form__dates {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  width: var(--group-width);
 }
 
 .cargo-form__date-field {
@@ -75,18 +94,19 @@
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 
 .cargo-form__date-field span {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-secondary);
 }
 
 .cargo-form__actions {
+  grid-column: 1 / -1;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 8px;
-  padding-top: 8px;
 }
 
 .btn-cancel {
