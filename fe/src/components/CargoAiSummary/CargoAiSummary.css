@@ -1,0 +1,130 @@
+.cargo-ai-summary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.cargo-ai-summary__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cargo-ai-summary__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cargo-ai-summary__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: var(--color-text-on-primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.cargo-ai-summary__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cargo-ai-summary__updated {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.cargo-ai-summary__text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.cargo-ai-summary__stats {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.cargo-ai-summary__stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  border-right: 1px solid var(--color-border);
+}
+
+.cargo-ai-summary__stat:last-child {
+  border-right: none;
+}
+
+.cargo-ai-summary__stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.cargo-ai-summary__stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cargo-ai-summary__stat-value--risk {
+  color: var(--color-warning);
+}
+
+.cargo-ai-summary__highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cargo-ai-summary__section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.cargo-ai-summary__highlight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.cargo-ai-summary__highlight-item {
+  position: relative;
+  padding-left: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.cargo-ai-summary__highlight-item::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}

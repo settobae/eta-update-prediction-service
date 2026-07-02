@@ -2,9 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 720px;
   flex: 1;
   min-height: 0;
+  container-type: inline-size;
 }
 
 /* header */
@@ -84,7 +84,7 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cargo-detail__date-item {
@@ -98,6 +98,21 @@
 
 .cargo-detail__date-item:last-child {
   border-right: none;
+}
+
+@container (max-width: 600px) {
+  .cargo-detail__dates {
+    flex-direction: column;
+  }
+
+  .cargo-detail__date-item {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cargo-detail__date-item:last-child {
+    border-bottom: none;
+  }
 }
 
 .cargo-detail__date-label {

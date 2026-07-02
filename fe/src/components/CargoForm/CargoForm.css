@@ -1,8 +1,8 @@
 .cargo-form {
-  max-width: 600px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 
 .cargo-form__title {
@@ -14,21 +14,21 @@
 .cargo-form__section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cargo-form__section > label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text-secondary);
 }
 
 .cargo-form__section input[type="text"],
 .cargo-form__section input[type="date"] {
-  padding: 8px 12px;
+  padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-text);
   background: var(--color-surface);
   outline: none;
@@ -41,15 +41,16 @@
 .cargo-form__route {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cargo-form__route input {
   flex: 1;
-  padding: 8px 12px;
+  min-width: 0;
+  padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-text);
   background: var(--color-surface);
   outline: none;
@@ -77,7 +78,7 @@
 }
 
 .cargo-form__date-field span {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-text-secondary);
 }
 
