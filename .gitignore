@@ -70,3 +70,11 @@ fe/*.ntvs*
 fe/*.njsproj
 fe/*.sln
 fe/*.sw?
+
+### Vessel Route Analyzer (vessel_route_analyzer/) ###
+vessel_route_analyzer/.venv
+vessel_route_analyzer/__pycache__/
+vessel_route_analyzer/**/__pycache__/
+vessel_route_analyzer/*.pyc
+vessel_route_analyzer/.pytest_cache
+vessel_route_analyzer/.mypy_cache

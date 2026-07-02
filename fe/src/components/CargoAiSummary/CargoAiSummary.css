@@ -47,6 +47,40 @@
   white-space: nowrap;
 }
 
+.cargo-ai-summary__refresh {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cargo-ai-summary__refresh:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.cargo-ai-summary__refresh:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.cargo-ai-summary__placeholder {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.cargo-ai-summary__error {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-danger);
+}
+
 .cargo-ai-summary__text {
   font-size: 14px;
   line-height: 1.6;
@@ -127,4 +161,80 @@
   height: 4px;
   border-radius: 50%;
   background: var(--color-primary);
+}
+
+.cargo-ai-summary__issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.cargo-ai-summary__issue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.cargo-ai-summary__issue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cargo-ai-summary__issue-category {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cargo-ai-summary__issue-severity {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-status-pending);
+  color: var(--color-text-secondary);
+}
+
+.cargo-ai-summary__issue-severity--high {
+  background: var(--color-status-delayed);
+  color: var(--color-danger);
+}
+
+.cargo-ai-summary__issue-severity--medium {
+  background: #fef3c7;
+  color: var(--color-warning);
+}
+
+.cargo-ai-summary__issue-severity--low {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.cargo-ai-summary__issue-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.cargo-ai-summary__issue-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.cargo-ai-summary__issue-meta a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.cargo-ai-summary__issue-meta a:hover {
+  text-decoration: underline;
 }

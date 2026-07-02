@@ -3,9 +3,10 @@ import {
   createCargo,
   deleteCargo,
   getAllCargos,
+  getCargoSummary,
   updateCargo,
 } from "../api/cargo";
-import { EMPTY_AI_SUMMARY } from "../dto/aiDto";
+import { EMPTY_AI_SUMMARY, toAiSummary } from "../dto/aiDto";
 
 // panelMode: 'idle' | 'detail' | 'add' | 'edit'
 // notification: null | { type: 'success' | 'error', message: string }
@@ -19,12 +20,16 @@ export const useCargoStore = create((set, get) => ({
   formOpen: false,
   editingCargo: null,
   aiSummary: EMPTY_AI_SUMMARY,
+  aiSummaryLoading: false,
+  aiSummaryError: null,
 
-  selectCargo: (cargo) => set({ selectedCargo: cargo, panelMode: 'detail' }),
+  selectCargo: (cargo) =>
+    set({ selectedCargo: cargo, panelMode: 'detail', aiSummary: EMPTY_AI_SUMMARY, aiSummaryError: null }),
   setAiSummary: (aiSummary) => set({ aiSummary }),
-  clearAiSummary: () => set({ aiSummary: EMPTY_AI_SUMMARY }),
+  clearAiSummary: () => set({ aiSummary: EMPTY_AI_SUMMARY, aiSummaryError: null }),
   setPanelMode: (mode) => set({ panelMode: mode }),
-  clearSelection: () => set({ selectedCargo: null, panelMode: 'idle' }),
+  clearSelection: () =>
+    set({ selectedCargo: null, panelMode: 'idle', aiSummary: EMPTY_AI_SUMMARY, aiSummaryError: null }),
   clearNotification: () => set({ notification: null }),
   toggleForm: () => set((s) => ({ formOpen: !s.formOpen })),
   closeForm: () => set({ formOpen: false }),
@@ -82,6 +87,16 @@ export const useCargoStore = create((set, get) => ({
         notification: { type: 'error', message: error.message },
       });
       throw error;
+    }
+  },
+
+  fetchAiSummary: async (cargoId) => {
+    set({ aiSummaryLoading: true, aiSummaryError: null });
+    try {
+      const response = await getCargoSummary(cargoId);
+      set({ aiSummary: toAiSummary(response), aiSummaryLoading: false });
+    } catch (error) {
+      set({ aiSummaryLoading: false, aiSummaryError: error.message });
     }
   },
 

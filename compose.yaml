@@ -30,6 +30,8 @@ services:
       MONGODB_URI: ${MONGODB_URI}
       MONGODB_DB: ${MONGODB_DB}
       CORS_ORIGINS: ${CORS_ORIGINS}
+      AI_API_BASE_URL: ${AI_API_BASE_URL}
+      AI_API_TIMEOUT_SECONDS: ${AI_API_TIMEOUT_SECONDS}
     depends_on:
       mongo:
         condition: service_healthy
@@ -51,6 +53,26 @@ services:
       - /app/node_modules
     depends_on:
       - be
+
+  vessel-analyzer:
+    build:
+      context: ./vessel_route_analyzer
+      dockerfile: Dockerfile
+    container_name: cargo-vessel-analyzer
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL_NAME: ${GEMINI_MODEL_NAME}
+      CORS_ALLOW_ORIGINS: ${AI_CORS_ALLOW_ORIGINS}
+    volumes:
+      # 호스트의 Codex/Gemini 인증 세션을 컨테이너 내부 CLI 실행에 재사용
+      # Codex CLI의 실제 인증/설정 홈은 ~/.config가 아니라 ~/.codex (CODEX_HOME) 이므로 반드시 이 경로를 마운트해야 함
+      # codex exec는 세션/상태 DB에 쓰기가 필요해 읽기전용으로는 동작하지 않음 (:ro 제거)
+      - ~/.codex:/root/.codex
+      - ~/.config:/root/.config:ro
+      - ~/.gemini:/root/.gemini:ro
 
 volumes:
   mongo-data:

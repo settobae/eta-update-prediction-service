@@ -19,8 +19,24 @@ class PathPoint(BaseModel):
     arrive_at: datetime
 
 
+class IssueItem(BaseModel):
+    category: str
+    location: str
+    severity: str
+    description: str
+    article_link: str
+    publisher: str
+    published_at: str
+    source_tier: str
+    verification_status: str
+
+
 class Summary(BaseModel):
-    data: str
+    delay_risk: str
+    total_delay_hours: int
+    eta_adjusted: str
+    issues: list[IssueItem]
+    analysis_summary: str
 
 
 class AISummaryResponse(BaseModel):

@@ -15,3 +15,5 @@ MONGODB_DB  = os.getenv("MONGODB_DB", "")
 CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 
 AI_API_BASE_URL = os.getenv("AI_API_BASE_URL", "")
+# AI 서버가 좌표 추론 + Codex 실행자/검수자 파이프라인을 순차 호출하므로 수분이 걸릴 수 있음
+AI_API_TIMEOUT_SECONDS = float(os.getenv("AI_API_TIMEOUT_SECONDS", "300"))

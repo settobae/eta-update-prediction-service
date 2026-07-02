@@ -95,6 +95,7 @@ function CargoDetail() {
       </div>
 
       <CargoMap
+        cargoId={cargo.id}
         from={cargo.from}
         stopover={cargo.stopover}
         to={cargo.to}

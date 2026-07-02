@@ -209,7 +209,7 @@ function drawTyphoonDangerCones(map, cones) {
   })
 }
 
-function CargoMap({ from, stopover, to, center, zoom, route }) {
+function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const markersRef = useRef([])
@@ -289,7 +289,7 @@ function CargoMap({ from, stopover, to, center, zoom, route }) {
       cancelled = true
       map.off('load', renderTyphoons)
     }
-  }, [])
+  }, [cargoId])
 
   return (
     <div className="cargo-map">
