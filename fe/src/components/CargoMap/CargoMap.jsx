@@ -241,6 +241,7 @@ function drawTyphoonDangerCones(map, cones) {
 function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
+  const mapLoadedRef = useRef(false)
   const markersRef = useRef([])
   const typhoonMarkersRef = useRef([])
   const shipMarkerRef = useRef(null)
@@ -248,16 +249,21 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
   useEffect(() => {
     if (mapRef.current) return
 
-    mapRef.current = new maptilersdk.Map({
+    const map = new maptilersdk.Map({
       container: containerRef.current,
       style: mapStyleUrl,
       center,
       zoom,
     })
+    mapRef.current = map
+    map.once('load', () => {
+      mapLoadedRef.current = true
+    })
 
     return () => {
       mapRef.current?.remove()
       mapRef.current = null
+      mapLoadedRef.current = false
     }
   }, [])
 
@@ -283,7 +289,7 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
       markersRef.current = drawRoute(map, route)
     }
 
-    if (map.isStyleLoaded()) {
+    if (mapLoadedRef.current) {
       renderRoute()
     } else {
       map.once('load', renderRoute)
@@ -299,18 +305,22 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
     if (!map) return
 
     const renderShipMarker = () => {
-      shipMarkerRef.current?.remove()
-      shipMarkerRef.current = null
+      try {
+        shipMarkerRef.current?.remove()
+        shipMarkerRef.current = null
 
-      const point = findCurrentPositionPoint(route, new Date())
-      if (!point) return
+        const point = findCurrentPositionPoint(route, new Date())
+        if (!point || !Number.isFinite(point.lat) || !Number.isFinite(point.lon)) return
 
-      shipMarkerRef.current = new maptilersdk.Marker({ element: createShipMarkerElement() })
-        .setLngLat([point.lon, point.lat])
-        .addTo(map)
+        shipMarkerRef.current = new maptilersdk.Marker({ element: createShipMarkerElement() })
+          .setLngLat([point.lon, point.lat])
+          .addTo(map)
+      } catch (error) {
+        console.error('현재 위치 아이콘을 표시하지 못했습니다.', error)
+      }
     }
 
-    if (map.isStyleLoaded()) {
+    if (mapLoadedRef.current) {
       renderShipMarker()
     } else {
       map.once('load', renderShipMarker)
@@ -351,7 +361,7 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
       }
     }
 
-    if (map.isStyleLoaded()) {
+    if (mapLoadedRef.current) {
       renderTyphoons()
     } else {
       map.once('load', renderTyphoons)

@@ -25,16 +25,21 @@ export const useCargoStore = create((set, get) => ({
   aiSummaryChecking: false,
   aiSummaryError: null,
   aiSummaryByCargoId: {},
+  aiSummaryLoadingByCargoId: {},
+  aiSummaryCheckingByCargoId: {},
+  aiSummaryCheckedCargoIds: {},
+  aiSummaryErrorByCargoId: {},
 
   selectCargo: (cargo) => {
-    const cached = get().aiSummaryByCargoId[cargo.id];
-    set({
+    set((s) => ({
       selectedCargo: cargo,
       panelMode: 'detail',
-      aiSummary: cached ?? EMPTY_AI_SUMMARY,
-      aiSummaryError: null,
-    });
-    if (!cached) {
+      aiSummary: s.aiSummaryByCargoId[cargo.id] ?? EMPTY_AI_SUMMARY,
+      aiSummaryLoading: Boolean(s.aiSummaryLoadingByCargoId[cargo.id]),
+      aiSummaryChecking: Boolean(s.aiSummaryCheckingByCargoId[cargo.id]),
+      aiSummaryError: s.aiSummaryErrorByCargoId[cargo.id] ?? null,
+    }));
+    if (!get().aiSummaryCheckedCargoIds[cargo.id]) {
       get().fetchExistingAiSummary(cargo.id);
     }
   },
@@ -104,38 +109,60 @@ export const useCargoStore = create((set, get) => ({
   },
 
   fetchExistingAiSummary: async (cargoId) => {
-    set({ aiSummaryChecking: true, aiSummaryError: null });
+    set((s) => ({
+      aiSummaryCheckingByCargoId: { ...s.aiSummaryCheckingByCargoId, [cargoId]: true },
+      ...(s.selectedCargo?.id === cargoId ? { aiSummaryChecking: true, aiSummaryError: null } : null),
+    }));
     try {
       const response = await getExistingAiSummary(cargoId);
-      if (get().selectedCargo?.id !== cargoId) return;
-      if (!response) {
-        set({ aiSummaryChecking: false });
-        return;
-      }
-      const aiSummary = toAiSummary(response);
+      const aiSummary = response ? toAiSummary(response) : null;
       set((s) => ({
-        aiSummary,
-        aiSummaryChecking: false,
-        aiSummaryByCargoId: { ...s.aiSummaryByCargoId, [cargoId]: aiSummary },
+        aiSummaryCheckingByCargoId: { ...s.aiSummaryCheckingByCargoId, [cargoId]: false },
+        aiSummaryCheckedCargoIds: { ...s.aiSummaryCheckedCargoIds, [cargoId]: true },
+        ...(aiSummary
+          ? { aiSummaryByCargoId: { ...s.aiSummaryByCargoId, [cargoId]: aiSummary } }
+          : null),
+        ...(s.selectedCargo?.id === cargoId
+          ? { aiSummaryChecking: false, ...(aiSummary ? { aiSummary } : null) }
+          : null),
       }));
     } catch (error) {
-      if (get().selectedCargo?.id !== cargoId) return;
-      set({ aiSummaryChecking: false, aiSummaryError: error.message });
+      set((s) => ({
+        aiSummaryCheckingByCargoId: { ...s.aiSummaryCheckingByCargoId, [cargoId]: false },
+        ...(s.selectedCargo?.id === cargoId
+          ? { aiSummaryChecking: false, aiSummaryError: error.message }
+          : null),
+      }));
     }
   },
 
   fetchAiSummary: async (cargoId) => {
-    set({ aiSummaryLoading: true, aiSummaryError: null });
+    set((s) => ({
+      aiSummaryLoadingByCargoId: { ...s.aiSummaryLoadingByCargoId, [cargoId]: true },
+      aiSummaryErrorByCargoId: { ...s.aiSummaryErrorByCargoId, [cargoId]: null },
+      ...(s.selectedCargo?.id === cargoId
+        ? { aiSummaryLoading: true, aiSummaryError: null }
+        : null),
+    }));
     try {
       const response = await getCargoSummary(cargoId);
       const aiSummary = toAiSummary(response);
       set((s) => ({
-        aiSummary,
-        aiSummaryLoading: false,
         aiSummaryByCargoId: { ...s.aiSummaryByCargoId, [cargoId]: aiSummary },
+        aiSummaryLoadingByCargoId: { ...s.aiSummaryLoadingByCargoId, [cargoId]: false },
+        aiSummaryCheckedCargoIds: { ...s.aiSummaryCheckedCargoIds, [cargoId]: true },
+        ...(s.selectedCargo?.id === cargoId
+          ? { aiSummary, aiSummaryLoading: false }
+          : null),
       }));
     } catch (error) {
-      set({ aiSummaryLoading: false, aiSummaryError: error.message });
+      set((s) => ({
+        aiSummaryLoadingByCargoId: { ...s.aiSummaryLoadingByCargoId, [cargoId]: false },
+        aiSummaryErrorByCargoId: { ...s.aiSummaryErrorByCargoId, [cargoId]: error.message },
+        ...(s.selectedCargo?.id === cargoId
+          ? { aiSummaryLoading: false, aiSummaryError: error.message }
+          : null),
+      }));
     }
   },
 
