@@ -67,6 +67,35 @@ function drawRoute(map, route) {
   ]
 }
 
+function findCurrentPositionPoint(route, now) {
+  if (!route || route.length === 0) return null
+
+  const nowTime = now.getTime()
+  const firstTime = new Date(route[0].arrive_at).getTime()
+  const lastTime = new Date(route[route.length - 1].arrive_at).getTime()
+
+  if (nowTime <= firstTime) return route[0]
+  if (nowTime >= lastTime) return route[route.length - 1]
+
+  for (let i = 0; i < route.length - 1; i++) {
+    const t1 = new Date(route[i].arrive_at).getTime()
+    const t2 = new Date(route[i + 1].arrive_at).getTime()
+
+    if (nowTime >= t1 && nowTime <= t2) {
+      return Math.abs(nowTime - t1) <= Math.abs(t2 - nowTime) ? route[i] : route[i + 1]
+    }
+  }
+
+  return route[route.length - 1]
+}
+
+function createShipMarkerElement() {
+  const el = document.createElement('div')
+  el.className = 'cargo-map__ship-marker'
+  el.textContent = '🚢'
+  return el
+}
+
 function createTyphoonMarkerElement(name) {
   const el = document.createElement('div')
   el.className = 'cargo-map__typhoon-marker'
@@ -214,6 +243,7 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
   const mapRef = useRef(null)
   const markersRef = useRef([])
   const typhoonMarkersRef = useRef([])
+  const shipMarkerRef = useRef(null)
 
   useEffect(() => {
     if (mapRef.current) return
@@ -233,9 +263,22 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
 
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !route || route.length === 0) return
+    if (!map) return
+
+    const clearRoute = () => {
+      markersRef.current.forEach((marker) => marker.remove())
+      markersRef.current = []
+      const source = map.getSource(ROUTE_SOURCE_ID)
+      if (source) {
+        source.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } })
+      }
+    }
 
     const renderRoute = () => {
+      if (!route || route.length === 0) {
+        clearRoute()
+        return
+      }
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = drawRoute(map, route)
     }
@@ -248,6 +291,35 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
 
     return () => {
       map.off('load', renderRoute)
+    }
+  }, [route])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+
+    const renderShipMarker = () => {
+      shipMarkerRef.current?.remove()
+      shipMarkerRef.current = null
+
+      const point = findCurrentPositionPoint(route, new Date())
+      if (!point) return
+
+      shipMarkerRef.current = new maptilersdk.Marker({ element: createShipMarkerElement() })
+        .setLngLat([point.lon, point.lat])
+        .addTo(map)
+    }
+
+    if (map.isStyleLoaded()) {
+      renderShipMarker()
+    } else {
+      map.once('load', renderShipMarker)
+    }
+
+    return () => {
+      map.off('load', renderShipMarker)
+      shipMarkerRef.current?.remove()
+      shipMarkerRef.current = null
     }
   }, [route])
 

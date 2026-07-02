@@ -3,7 +3,14 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from app.service.cargo_service import cargo_service
 from app.dto.cargo_dto import CargoRequest
-from app.controller.cargo_swagger import create_docs, get_all_docs, update_docs, delete_docs, summary_docs
+from app.controller.cargo_swagger import (
+    create_docs,
+    get_all_docs,
+    update_docs,
+    delete_docs,
+    summary_docs,
+    existing_summary_docs,
+)
 
 router = APIRouter(
     prefix="/cargos",
@@ -34,6 +41,14 @@ async def get_cargo_summary(cargo_id: str):
     return JSONResponse(
         content=jsonable_encoder(result.model_dump(mode="json"))
     )
+
+
+@router.get("/summary/{cargo_id}/existing", **existing_summary_docs)
+async def get_existing_cargo_summary(cargo_id: str):
+    result = await cargo_service.get_existing_summary(cargo_id)
+    if result is None:
+        return JSONResponse(content=None)
+    return JSONResponse(content=jsonable_encoder(result.model_dump(mode="json")))
 
 
 @router.put("/{cargo_id}", **update_docs)

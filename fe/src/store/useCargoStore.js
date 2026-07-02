@@ -4,6 +4,7 @@ import {
   deleteCargo,
   getAllCargos,
   getCargoSummary,
+  getExistingAiSummary,
   updateCargo,
 } from "../api/cargo";
 import { EMPTY_AI_SUMMARY, toAiSummary } from "../dto/aiDto";
@@ -21,10 +22,22 @@ export const useCargoStore = create((set, get) => ({
   editingCargo: null,
   aiSummary: EMPTY_AI_SUMMARY,
   aiSummaryLoading: false,
+  aiSummaryChecking: false,
   aiSummaryError: null,
+  aiSummaryByCargoId: {},
 
-  selectCargo: (cargo) =>
-    set({ selectedCargo: cargo, panelMode: 'detail', aiSummary: EMPTY_AI_SUMMARY, aiSummaryError: null }),
+  selectCargo: (cargo) => {
+    const cached = get().aiSummaryByCargoId[cargo.id];
+    set({
+      selectedCargo: cargo,
+      panelMode: 'detail',
+      aiSummary: cached ?? EMPTY_AI_SUMMARY,
+      aiSummaryError: null,
+    });
+    if (!cached) {
+      get().fetchExistingAiSummary(cargo.id);
+    }
+  },
   setAiSummary: (aiSummary) => set({ aiSummary }),
   clearAiSummary: () => set({ aiSummary: EMPTY_AI_SUMMARY, aiSummaryError: null }),
   setPanelMode: (mode) => set({ panelMode: mode }),
@@ -90,11 +103,37 @@ export const useCargoStore = create((set, get) => ({
     }
   },
 
+  fetchExistingAiSummary: async (cargoId) => {
+    set({ aiSummaryChecking: true, aiSummaryError: null });
+    try {
+      const response = await getExistingAiSummary(cargoId);
+      if (get().selectedCargo?.id !== cargoId) return;
+      if (!response) {
+        set({ aiSummaryChecking: false });
+        return;
+      }
+      const aiSummary = toAiSummary(response);
+      set((s) => ({
+        aiSummary,
+        aiSummaryChecking: false,
+        aiSummaryByCargoId: { ...s.aiSummaryByCargoId, [cargoId]: aiSummary },
+      }));
+    } catch (error) {
+      if (get().selectedCargo?.id !== cargoId) return;
+      set({ aiSummaryChecking: false, aiSummaryError: error.message });
+    }
+  },
+
   fetchAiSummary: async (cargoId) => {
     set({ aiSummaryLoading: true, aiSummaryError: null });
     try {
       const response = await getCargoSummary(cargoId);
-      set({ aiSummary: toAiSummary(response), aiSummaryLoading: false });
+      const aiSummary = toAiSummary(response);
+      set((s) => ({
+        aiSummary,
+        aiSummaryLoading: false,
+        aiSummaryByCargoId: { ...s.aiSummaryByCargoId, [cargoId]: aiSummary },
+      }));
     } catch (error) {
       set({ aiSummaryLoading: false, aiSummaryError: error.message });
     }

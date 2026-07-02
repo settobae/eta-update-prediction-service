@@ -36,3 +36,9 @@ summary_docs = dict(
     summary="AI 화물 경로 요약 조회",
     description="화물 출발/경유/도착 정보를 AI 서버로 전달해 경로 좌표 및 요약을 받아 그대로 반환합니다. 응답은 MongoDB에 별도 저장됩니다.",
 )
+
+existing_summary_docs = dict(
+    response_model=AISummaryResponse | None,
+    summary="저장된 AI 화물 경로 요약 조회",
+    description="AI 서버에 새로 요청하지 않고, 이미 저장된 요약이 있는지만 조회합니다. 없으면 null을 반환합니다.",
+)

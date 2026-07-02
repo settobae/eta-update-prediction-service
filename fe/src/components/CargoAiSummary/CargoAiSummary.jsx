@@ -12,6 +12,7 @@ function CargoAiSummary() {
   const cargo = useCargoStore((s) => s.selectedCargo)
   const aiSummary = useCargoStore((s) => s.aiSummary)
   const loading = useCargoStore((s) => s.aiSummaryLoading)
+  const checking = useCargoStore((s) => s.aiSummaryChecking)
   const error = useCargoStore((s) => s.aiSummaryError)
   const fetchAiSummary = useCargoStore((s) => s.fetchAiSummary)
 
@@ -31,7 +32,7 @@ function CargoAiSummary() {
           type="button"
           className="cargo-ai-summary__refresh"
           onClick={() => fetchAiSummary(cargo.id)}
-          disabled={loading}
+          disabled={loading || checking}
         >
           {loading ? '분석 중…' : hasResult ? '다시 분석' : 'AI 분석 요청'}
         </button>
@@ -39,7 +40,11 @@ function CargoAiSummary() {
 
       {error && <p className="cargo-ai-summary__error">분석 요청에 실패했습니다: {error}</p>}
 
-      {!hasResult && !loading && !error && (
+      {checking && !hasResult && (
+        <p className="cargo-ai-summary__placeholder">저장된 분석 결과를 확인하고 있습니다…</p>
+      )}
+
+      {!hasResult && !loading && !checking && !error && (
         <p className="cargo-ai-summary__placeholder">
           버튼을 눌러 AI에게 항로상 위협 요인과 예상 지연을 분석 요청하세요.
         </p>

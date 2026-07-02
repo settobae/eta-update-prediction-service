@@ -32,6 +32,16 @@ class CargoService:
         if not deleted:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cargo not found")
 
+    async def get_existing_summary(self, cargo_id: str) -> AISummaryResponse | None:
+        cargo = await cargo_repository.find_by_id(cargo_id)
+        if not cargo:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cargo not found")
+
+        existing = await ai_summary_repository.find_by_cargo_id(cargo_id)
+        if not existing:
+            return None
+        return AISummaryResponse(path=existing.path, summary=existing.summary)
+
     async def summarize(self, cargo_id: str) -> AISummaryResponse:
         cargo = await cargo_repository.find_by_id(cargo_id)
         if not cargo:
