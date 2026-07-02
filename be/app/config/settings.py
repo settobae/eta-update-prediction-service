@@ -13,3 +13,5 @@ MONGODB_DB  = os.getenv("MONGODB_DB", "")
 
 # comma-separated: http://localhost:5173,https://example.com
 CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+
+AI_API_BASE_URL = os.getenv("AI_API_BASE_URL", "")

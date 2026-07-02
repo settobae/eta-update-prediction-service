@@ -8,10 +8,11 @@ client: AsyncIOMotorClient = None
 async def connect():
     global client
     from app.entity.cargo_entity import Cargo
+    from app.entity.ai_summary_entity import AISummary
     client = AsyncIOMotorClient(MONGODB_URI)
     await init_beanie(
         database=client[MONGODB_DB],
-        document_models=[Cargo],
+        document_models=[Cargo, AISummary],
     )
 
 

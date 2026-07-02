@@ -1,4 +1,6 @@
 ### Backend (be/) ###
+be/**/__pycache__/
+be/*.pyc
 be/HELP.md
 be/.gradle
 be/build/

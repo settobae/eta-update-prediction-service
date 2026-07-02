@@ -13,6 +13,13 @@ async def create(dto: CargoRequest) -> Cargo:
     return cargo
 
 
+async def find_by_id(cargo_id: str) -> Cargo | None:
+    try:
+        return await Cargo.get(ObjectId(cargo_id))
+    except (InvalidId, Exception):
+        return None
+
+
 async def find_all() -> list[Cargo]:
     now = datetime.now(timezone.utc)
 

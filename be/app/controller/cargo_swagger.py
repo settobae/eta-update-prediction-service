@@ -1,4 +1,5 @@
 from app.dto.cargo_dto import CargoResponse
+from app.dto.ai_dto import AISummaryResponse
 
 cargo_tags_metadata = [
     {
@@ -28,4 +29,10 @@ update_docs = dict(
 
 delete_docs = dict(
     summary="화물 삭제",
+)
+
+summary_docs = dict(
+    response_model=AISummaryResponse,
+    summary="AI 화물 경로 요약 조회",
+    description="화물 출발/경유/도착 정보를 AI 서버로 전달해 경로 좌표 및 요약을 받아 그대로 반환합니다. 응답은 MongoDB에 별도 저장됩니다.",
 )
