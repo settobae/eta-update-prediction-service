@@ -40,7 +40,7 @@ class CargoService:
         existing = await ai_summary_repository.find_by_cargo_id(cargo_id)
         if not existing:
             return None
-        return AISummaryResponse(path=existing.path, summary=existing.summary)
+        return AISummaryResponse(**existing.model_dump(include={"path", "summary"}))
 
     async def summarize(self, cargo_id: str) -> AISummaryResponse:
         cargo = await cargo_repository.find_by_id(cargo_id)
