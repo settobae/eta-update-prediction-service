@@ -5,6 +5,7 @@ import {
   getAllCargos,
   updateCargo,
 } from "../api/cargo";
+import { EMPTY_AI_SUMMARY } from "../dto/aiDto";
 
 // panelMode: 'idle' | 'detail' | 'add' | 'edit'
 // notification: null | { type: 'success' | 'error', message: string }
@@ -17,8 +18,11 @@ export const useCargoStore = create((set, get) => ({
   notification: null,
   formOpen: false,
   editingCargo: null,
+  aiSummary: EMPTY_AI_SUMMARY,
 
   selectCargo: (cargo) => set({ selectedCargo: cargo, panelMode: 'detail' }),
+  setAiSummary: (aiSummary) => set({ aiSummary }),
+  clearAiSummary: () => set({ aiSummary: EMPTY_AI_SUMMARY }),
   setPanelMode: (mode) => set({ panelMode: mode }),
   clearSelection: () => set({ selectedCargo: null, panelMode: 'idle' }),
   clearNotification: () => set({ notification: null }),

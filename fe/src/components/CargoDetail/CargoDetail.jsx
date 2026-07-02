@@ -16,6 +16,7 @@ const getDelayText = (ata, eta) => {
 
 function CargoDetail() {
   const cargo = useCargoStore((s) => s.selectedCargo)
+  const aiSummary = useCargoStore((s) => s.aiSummary)
   if (!cargo) return null
 
   const status = getCargoStatus(cargo)
@@ -99,6 +100,7 @@ function CargoDetail() {
         to={cargo.to}
         center={MAP_INITIAL_CENTER}
         zoom={MAP_INITIAL_ZOOM}
+        route={aiSummary?.path}
       />
 
     </div>
