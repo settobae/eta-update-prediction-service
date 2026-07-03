@@ -27,6 +27,9 @@ export const toAiSummary = (response) => ({
     lat: point.lat,
     lon: point.lon,
     arrive_at: point.arrive_at,
+    // 기존에 저장된 경로 데이터에는 이 필드가 없을 수 있으며, 그 경우 undefined로 유지되어
+    // CargoMap에서 해당 좌표의 핀 표시를 건너뛰는 기준으로 사용된다.
+    point_type: point.point_type,
   })),
   summary: {
     delay_risk: response.summary.delay_risk,

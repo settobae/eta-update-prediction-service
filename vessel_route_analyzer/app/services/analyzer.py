@@ -39,10 +39,13 @@ def parse_to_kst(time_str: str) -> datetime:
         return dt.replace(tzinfo=kst_tz)
     return dt.astimezone(kst_tz)
 
-def calculate_points_eta(atd: str, eta: str, route_points: list, delay_hours: int) -> list:
+def calculate_points_eta(atd: str, eta: str, route_points: list, delay_hours: int, stopover_index: int = None) -> list:
     """
     출발 시각(atd)과 계획된 도착 시각(eta)을 기준으로 지연 시간(delay_hours)을 가산한 후,
     10개 좌표 간의 누적 해상 거리에 비례하여 각 좌표의 KST 도착 예정 시각(arrive_at)을 계산합니다.
+    아울러 각 좌표의 유형(point_type)을 함께 부여합니다: 0번 인덱스는 departure(출발),
+    마지막 인덱스는 arrival(도착), stopover_index로 지정된 인덱스는 stopover(경유),
+    나머지는 waypoint(중간 경로점)입니다.
     """
     n = len(route_points)
     if n == 0:
@@ -71,23 +74,33 @@ def calculate_points_eta(atd: str, eta: str, route_points: list, delay_hours: in
     for i in range(n):
         ratio = (distances[i] / total_distance) if total_distance > 0 else 0
         point_eta_dt = atd_dt + (total_travel_time * ratio)
-        
+
+        if i == 0:
+            point_type = "departure"
+        elif i == n - 1:
+            point_type = "arrival"
+        elif stopover_index is not None and i == stopover_index:
+            point_type = "stopover"
+        else:
+            point_type = "waypoint"
+
         points_with_eta.append({
             "lat": route_points[i][1],
             "lon": route_points[i][0],
-            "arrive_at": point_eta_dt.isoformat()
+            "arrive_at": point_eta_dt.isoformat(),
+            "point_type": point_type
         })
-        
+
     return points_with_eta
 
-async def analyze_route_issues(departure: str, destination: str, atd: str, eta: str, route_points: list) -> dict:
+async def analyze_route_issues(departure: str, destination: str, atd: str, eta: str, route_points: list, stopover_index: int = None) -> dict:
     """
     기상 이슈는 Open-Meteo 기상/해양 API에서, 지정학/항구정체 등 뉴스 기반 이슈는 Codex CLI
     실행자/검수자 파이프라인(공신력 있는 주요 매체 한정)에서 각각 조회한 뒤 병합하는 상위 통합
     서비스 비동기 함수입니다. 두 조회는 병렬로 실행되어 전체 응답 시간을 단축합니다.
     """
     # 기상 예보 조회 시점 산출을 위한 기준(지연 미반영) 도착 시각
-    baseline_points = calculate_points_eta(atd, eta, route_points, delay_hours=0)
+    baseline_points = calculate_points_eta(atd, eta, route_points, delay_hours=0, stopover_index=stopover_index)
     # 기상 조회와 항로 통과 국가 추정을 뉴스 검색 전에 병렬로 미리 진행해 전체 응답 시간을 단축
     weather_task = asyncio.create_task(get_weather_issues(baseline_points))
     countries_task = asyncio.create_task(get_route_countries(route_points))
@@ -151,7 +164,7 @@ async def analyze_route_issues(departure: str, destination: str, atd: str, eta: 
     logger.info("KST 비례배분 도달 일정 산출 중 | atd=%s eta=%s", atd, eta)
 
     # 지연 시간 및 KST 타임존 기반 각 포인트별 예정 시각 산출 (atd와 eta 기준 비례배분)
-    points_with_eta = calculate_points_eta(atd, eta, route_points, delay_hours)
+    points_with_eta = calculate_points_eta(atd, eta, route_points, delay_hours, stopover_index=stopover_index)
 
     # 최종 조정 도착 일정 계산 (KST)
     eta_dt = parse_to_kst(eta)

@@ -1,12 +1,14 @@
 from beanie import Document
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 class PathPoint(BaseModel):
     lat: float
     lon: float
     arrive_at: datetime
+    point_type: Optional[str] = None
 
 
 class IssueItem(BaseModel):

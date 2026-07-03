@@ -86,24 +86,27 @@ def interpolate_coords(coords: list, target_count: int = 10) -> list:
         
     return sampled
 
-async def calculate_optimal_route(departure: str, destination: str, stopover: str = None) -> list:
+async def calculate_optimal_route(departure: str, destination: str, stopover: str = None) -> tuple:
     """
     출발지, 단일 경유지(stopover, 선택), 도착지를 엮어 해상 최적 항로를 계산하고,
     전체 항로 좌표를 취합하여 최종 10개의 좌표 포인트로 보간 및 축약합니다.
+    반환값은 (10개 대표 좌표 리스트, 경유지에 해당하는 대표 좌표의 인덱스 또는 None) 튜플입니다.
     """
     # 1. 경로 순서 설정 (출발지 -> 경유지(존재 시) -> 도착지)
-    waypoints = [stopover] if stopover and stopover.strip() else []
+    has_stopover = bool(stopover and stopover.strip())
+    waypoints = [stopover] if has_stopover else []
     locations = [departure] + waypoints + [destination]
 
     # 2. 모든 지점의 좌표 변환 (지점마다 캐시 미스 시 Codex CLI 호출이 발생해 순차 처리 시 지연이 누적되므로 병렬 조회)
     coords_list = await asyncio.gather(*(get_coordinates_from_name(loc) for loc in locations))
 
-    # 3. 세그먼트별 해상 항로 계산 및 병합
+    # 3. 세그먼트별 해상 항로 계산 및 병합 (경유지가 있으면 경유지 도착 지점의 원본 인덱스를 함께 추적)
     full_route_coordinates = []
+    stopover_raw_index = None
     for i in range(len(coords_list) - 1):
         segment_origin = coords_list[i]
         segment_dest = coords_list[i+1]
-        
+
         # 세그먼트 계산 진행 로그
         logger.info(
             "세그먼트 %d 경로 계산 중 | %s %s -> %s %s",
@@ -114,15 +117,27 @@ async def calculate_optimal_route(departure: str, destination: str, stopover: st
         segment_coords = segment_route['geometry']['coordinates']
 
         logger.info("세그먼트 %d 경로 계산 성공", i + 1)
-        
+
         if full_route_coordinates and segment_coords:
             full_route_coordinates.extend(segment_coords[1:])
         else:
             full_route_coordinates.extend(segment_coords)
-            
+
+        # 경유지가 있는 경우, 경유지 좌표에 도착하는 세그먼트(첫 번째 세그먼트)의 종착 인덱스를 기록
+        if has_stopover and i == 0:
+            stopover_raw_index = len(full_route_coordinates) - 1
+
     # 4. 전체 항로를 정확히 10개 대표 좌표로 축약
-    logger.info("전체 %d개 상세 경로 좌표를 10개 대표 포인트로 보간 중...", len(full_route_coordinates))
-    simplified_route = interpolate_coords(full_route_coordinates, target_count=10)
+    raw_count = len(full_route_coordinates)
+    logger.info("전체 %d개 상세 경로 좌표를 10개 대표 포인트로 보간 중...", raw_count)
+    target_count = 10
+    simplified_route = interpolate_coords(full_route_coordinates, target_count=target_count)
     logger.info("10개 대표 좌표 보간 완료")
 
-    return simplified_route
+    # 5. 경유지 원본 인덱스를 보간된 10개 대표 좌표 중 가장 가까운 인덱스로 환산
+    stopover_sample_index = None
+    if stopover_raw_index is not None and raw_count > 1:
+        stopover_sample_index = round(stopover_raw_index * (target_count - 1) / (raw_count - 1))
+        stopover_sample_index = max(0, min(target_count - 1, stopover_sample_index))
+
+    return simplified_route, stopover_sample_index

@@ -17,6 +17,7 @@ class PathPoint(BaseModel):
     lat: float
     lon: float
     arrive_at: datetime
+    point_type: Optional[str] = None
 
 
 class IssueItem(BaseModel):

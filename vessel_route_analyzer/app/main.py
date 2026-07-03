@@ -43,7 +43,7 @@ async def analyze_route(request: RouteRequest):
     )
     try:
         # 1. 단일 경유지(stopover)를 감안한 searoute 최적 항로 계산 및 10개 대표 포인트 획득
-        sampled_route = await calculate_optimal_route(
+        sampled_route, stopover_index = await calculate_optimal_route(
             departure=request.departure_from,
             destination=request.to,
             stopover=request.stopover
@@ -56,7 +56,8 @@ async def analyze_route(request: RouteRequest):
             destination=request.to,
             atd=request.atd,
             eta=request.eta,
-            route_points=sampled_route
+            route_points=sampled_route,
+            stopover_index=stopover_index
         )
         logger.info(
             "[3/4] Codex 응답 수신 | delay_risk=%s total_delay_hours=%s issues=%d개",
@@ -72,7 +73,8 @@ async def analyze_route(request: RouteRequest):
                 PathPoint(
                     lat=point.get("lat"),
                     lon=point.get("lon"),
-                    arrive_at=point.get("arrive_at")
+                    arrive_at=point.get("arrive_at"),
+                    point_type=point.get("point_type")
                 )
             )
         

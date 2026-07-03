@@ -2,7 +2,7 @@
 export const getCargoStatus = (cargo) => {
   if (cargo.ata) return 'done'
   if (cargo.eta && new Date(cargo.eta) < new Date()) return 'delayed'
-  if (cargo.atd) return 'transit'
+  if (cargo.atd && new Date(cargo.atd) <= new Date()) return 'transit'
   return 'pending'
 }
 

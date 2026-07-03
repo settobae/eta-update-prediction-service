@@ -15,6 +15,10 @@ class PathPoint(BaseModel):
     lat: float = Field(..., description="위도 좌표")
     lon: float = Field(..., description="경도 좌표")
     arrive_at: str = Field(..., description="한국시각(KST) 기준 해당 좌표 도달 예정 시각")
+    point_type: Optional[str] = Field(
+        default=None,
+        description="좌표 유형. departure(출발), stopover(경유), waypoint(중간 경로점), arrival(도착) 중 하나"
+    )
 
 class IssueItem(BaseModel):
     category: str = Field(..., description="이슈 카테고리. 기상, 지정학/해적, 항구정체, 기타 중 하나")

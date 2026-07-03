@@ -19,7 +19,16 @@ const SHIP_POSITION_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 
 const MARKER_COLOR_START = '#2e7d32'
 const MARKER_COLOR_END = '#c62828'
+const MARKER_COLOR_STOPOVER = '#f9a825'
 const ROUTE_LINE_COLOR = '#1565c0'
+
+// point_type(좌표 유형)이 있는 좌표만 핀으로 표시한다. waypoint(중간 경로점)나
+// point_type이 없는(메타데이터 미보유) 기존 저장 데이터는 핀 표시 대상에서 제외된다.
+const MARKER_COLOR_BY_POINT_TYPE = {
+  departure: MARKER_COLOR_START,
+  stopover: MARKER_COLOR_STOPOVER,
+  arrival: MARKER_COLOR_END,
+}
 
 const TYPHOON_FORECAST_SOURCE_ID = 'typhoon-forecast'
 const TYPHOON_FORECAST_GLOW_LAYER_ID = 'typhoon-forecast-glow'
@@ -69,15 +78,14 @@ function drawRoute(map, route) {
     })
   }
 
-  const start = route[0]
-  const end = route[route.length - 1]
-
-  if (start === end) return [addMarker(map, start, MARKER_COLOR_START)]
-
-  return [
-    addMarker(map, start, MARKER_COLOR_START),
-    addMarker(map, end, MARKER_COLOR_END),
-  ]
+  // point_type 메타데이터를 기준으로 출발/경유/도착 좌표에 핀을 표시한다.
+  // point_type이 없는 좌표(메타데이터 미보유 기존 데이터, waypoint)는 핀 표시를 건너뛴다.
+  return route.reduce((markers, point) => {
+    const color = MARKER_COLOR_BY_POINT_TYPE[point.point_type]
+    if (!color) return markers
+    markers.push(addMarker(map, point, color))
+    return markers
+  }, [])
 }
 
 function findCurrentPositionPoint(route, now) {
