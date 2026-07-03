@@ -47,7 +47,6 @@
 
 - [프로젝트 셋업 및 실행 가이드](./docs/guide.md)
 - [AI 활용 방안 및 대화내용](./docs/develop_ai.md)
-- [회의록 (2026-06-30)](./docs/conferences/2026-06-30.md)
 
 ## 참가 인원
 
