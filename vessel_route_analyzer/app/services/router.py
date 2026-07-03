@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import searoute as sr
 from app.services.codex_runner import run_codex_prompt
@@ -94,12 +95,9 @@ async def calculate_optimal_route(departure: str, destination: str, stopover: st
     waypoints = [stopover] if stopover and stopover.strip() else []
     locations = [departure] + waypoints + [destination]
 
-    # 2. 모든 지점의 좌표 변환
-    coords_list = []
-    for loc in locations:
-        coords = await get_coordinates_from_name(loc)
-        coords_list.append(coords)
-        
+    # 2. 모든 지점의 좌표 변환 (지점마다 캐시 미스 시 Codex CLI 호출이 발생해 순차 처리 시 지연이 누적되므로 병렬 조회)
+    coords_list = await asyncio.gather(*(get_coordinates_from_name(loc) for loc in locations))
+
     # 3. 세그먼트별 해상 항로 계산 및 병합
     full_route_coordinates = []
     for i in range(len(coords_list) - 1):

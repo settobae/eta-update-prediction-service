@@ -1,7 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { maptilersdk, mapStyleUrl } from '../../api/mapClient'
-import { fetchTyphoonDangerCones, fetchTyphoonForecasts } from '../../api/typhoon'
-import { toTyphoonDangerCones, toTyphoonForecastPaths } from '../../dto/typhoonDto'
+import {
+  fetchTyphoonDangerCones,
+  fetchTyphoonForecastPositions,
+  fetchTyphoonForecasts,
+} from '../../api/typhoon'
+import {
+  toTyphoonDangerCones,
+  toTyphoonForecastPaths,
+  toTyphoonForecastPositions,
+} from '../../dto/typhoonDto'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 import './CargoMap.css'
 
@@ -22,6 +30,10 @@ const TYPHOON_CONE_SOURCE_ID = 'typhoon-danger-cone'
 const TYPHOON_CONE_FILL_LAYER_ID = 'typhoon-danger-cone-fill'
 const TYPHOON_CONE_OUTLINE_LAYER_ID = 'typhoon-danger-cone-outline'
 const TYPHOON_CONE_COLOR = '#e65100'
+
+// 선박 좌표/ETA와 태풍 예보 지점이 이 반경(km)·시간(ms) 이내로 겹치면 경고 표시
+const OVERLAP_WARNING_RADIUS_KM = 300
+const OVERLAP_WARNING_TIME_WINDOW_MS = 12 * 60 * 60 * 1000
 
 function toRouteGeoJson(route) {
   return {
@@ -239,6 +251,69 @@ function drawTyphoonDangerCones(map, cones) {
   })
 }
 
+function haversineDistanceKm([lon1, lat1], [lon2, lat2]) {
+  const toRad = (deg) => (deg * Math.PI) / 180
+  const earthRadiusKm = 6371
+  const dPhi = toRad(lat2 - lat1)
+  const dLambda = toRad(lon2 - lon1)
+  const phi1 = toRad(lat1)
+  const phi2 = toRad(lat2)
+
+  const a =
+    Math.sin(dPhi / 2) ** 2 + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) ** 2
+
+  return 2 * earthRadiusKm * Math.asin(Math.sqrt(a))
+}
+
+// 선박 경로의 각 좌표/ETA(arrive_at)가 태풍 예보 지점의 좌표/ETA와
+// 시간·거리상으로 겹치는지 계산한다. 지도에는 태풍 경로와 선박 경로를
+// 먼저 그린 뒤, 그 데이터를 바탕으로 이 연산 결과를 별도로 적용한다.
+function findOverlappingRoutePoints(route, typhoonForecastGroups) {
+  if (!route || route.length === 0 || !typhoonForecastGroups || typhoonForecastGroups.length === 0) {
+    return []
+  }
+
+  return route.filter((point) => {
+    if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon) || !point.arrive_at) return false
+
+    const shipTime = new Date(point.arrive_at).getTime()
+    if (!Number.isFinite(shipTime)) return false
+
+    return typhoonForecastGroups.some((group) =>
+      group.points.some((typhoonPoint) => {
+        const timeDiff = Math.abs(shipTime - typhoonPoint.etaAt.getTime())
+        if (timeDiff > OVERLAP_WARNING_TIME_WINDOW_MS) return false
+
+        const distanceKm = haversineDistanceKm(
+          [point.lon, point.lat],
+          [typhoonPoint.lon, typhoonPoint.lat]
+        )
+        return distanceKm <= OVERLAP_WARNING_RADIUS_KM
+      })
+    )
+  })
+}
+
+function createOverlapWarningElement() {
+  const el = document.createElement('div')
+  el.className = 'cargo-map__warning-marker'
+  el.textContent = '⚠️'
+  return el
+}
+
+function drawOverlapWarnings(map, points) {
+  return points.map((point) =>
+    new maptilersdk.Marker({ element: createOverlapWarningElement() })
+      .setLngLat([point.lon, point.lat])
+      .setPopup(
+        new maptilersdk.Popup({ offset: 16 }).setText(
+          `태풍 예보 경로와 근접 (도착 예정: ${point.arrive_at})`
+        )
+      )
+      .addTo(map)
+  )
+}
+
 function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
@@ -246,6 +321,20 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
   const markersRef = useRef([])
   const typhoonMarkersRef = useRef([])
   const shipMarkerRef = useRef(null)
+  const routeRef = useRef([])
+  const typhoonForecastGroupsRef = useRef([])
+  const warningMarkersRef = useRef([])
+
+  const refreshOverlapWarnings = () => {
+    const map = mapRef.current
+    if (!map || !mapLoadedRef.current) return
+
+    warningMarkersRef.current.forEach((marker) => marker.remove())
+    warningMarkersRef.current = drawOverlapWarnings(
+      map,
+      findOverlappingRoutePoints(routeRef.current, typhoonForecastGroupsRef.current)
+    )
+  }
 
   useEffect(() => {
     if (mapRef.current) return
@@ -272,6 +361,8 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
     const map = mapRef.current
     if (!map) return
 
+    routeRef.current = route
+
     const clearRoute = () => {
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = []
@@ -279,6 +370,7 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
       if (source) {
         source.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } })
       }
+      refreshOverlapWarnings()
     }
 
     const renderRoute = () => {
@@ -288,6 +380,7 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
       }
       markersRef.current.forEach((marker) => marker.remove())
       markersRef.current = drawRoute(map, route)
+      refreshOverlapWarnings()
     }
 
     if (mapLoadedRef.current) {
@@ -347,14 +440,16 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
 
     const renderTyphoons = async () => {
       try {
-        const [forecasts, dangerCones] = await Promise.all([
+        const [forecasts, forecastPositions, dangerCones] = await Promise.all([
           fetchTyphoonForecasts(),
+          fetchTyphoonForecastPositions(),
           fetchTyphoonDangerCones(),
         ])
         if (cancelled) return
 
         const paths = toTyphoonForecastPaths(forecasts)
 
+        // 태풍 경로와 선박 경로를 먼저 그린다.
         typhoonMarkersRef.current.forEach((marker) => marker.remove())
         typhoonMarkersRef.current = [
           ...drawTyphoonPositions(map, paths),
@@ -362,6 +457,10 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
         ]
         drawTyphoonDangerCones(map, toTyphoonDangerCones(dangerCones))
         drawTyphoonForecastPaths(map, paths)
+
+        // 그려진 데이터를 바탕으로 선박 좌표/ETA와의 겹침 여부를 추후 연산해 적용한다.
+        typhoonForecastGroupsRef.current = toTyphoonForecastPositions(forecastPositions)
+        refreshOverlapWarnings()
       } catch (error) {
         console.error('태풍 정보를 불러오지 못했습니다.', error)
       }

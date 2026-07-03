@@ -68,13 +68,12 @@ export const useCargoStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const cargo = await createCargo(dto);
-      set({
-        cargos: [...get().cargos, cargo],
-        selectedCargo: cargo,
-        panelMode: 'detail',
+      set((s) => ({
+        cargos: [...s.cargos, cargo],
         loading: false,
         notification: { type: 'success', message: '화물이 추가되었습니다.' },
-      });
+      }));
+      get().selectCargo(cargo);
       return cargo;
     } catch (error) {
       set({
@@ -89,15 +88,14 @@ export const useCargoStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const updated = await updateCargo(cargoId, dto);
-      set({
-        cargos: get().cargos.map((cargo) =>
+      set((s) => ({
+        cargos: s.cargos.map((cargo) =>
           cargo.id === cargoId ? updated : cargo
         ),
-        selectedCargo: updated,
-        panelMode: 'detail',
         loading: false,
         notification: { type: 'success', message: '화물이 수정되었습니다.' },
-      });
+      }));
+      get().selectCargo(updated);
       return updated;
     } catch (error) {
       set({
