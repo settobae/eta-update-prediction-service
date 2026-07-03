@@ -88,6 +88,23 @@ API 검색, 활용 가능한 기술 장단점 비교, Docker 가상환경 시뮬
 
 ---
 
+### Codex CLI
+
+활용 상세:
+
+- **서버 추론 모델 정답 도출 검증 (실행자-검수자 교차검증)**
+  - AI가 생성한 위협 이슈를 그대로 신뢰하지 않고, "실행자(Executor) → 검수자(Reviewer)" 2단계 교차검증 파이프라인으로 구성
+    - 실행자: 국가별 뉴스 키워드 검색으로 위협 이슈 초안(issues) 생성
+    - 검수자: 실행자 초안의 기사 링크가 실제 공신력 있는 매체(CNN/Reuters/BBC 등)의 유효한 상세 URL인지, 좌표·항로와 실제로 관련 있는 이슈인지, 설명이 과장되지 않았는지 재검토한 뒤 `verified`/`corrected`/`rejected_reference` 상태로 최종 확정
+  - "정답(수치)"에 해당하는 지연시간(total_delay_hours)·위험도(delay_risk)·종합소견(analysis_summary)은 AI가 직접 문장/숫자로 생성하지 않고, AI는 `severity`(High/Medium/Low) 판단만 내리도록 프롬프트를 제한 → 실제 수치는 `delay_policy.py`가 결정론적으로 산출
+  - 실행자/검수자 파이프라인이 타임아웃·에러로 실패해도 서비스가 죽지 않도록 "분석 생략"을 명시하는 안전 fallback 이슈를 반환하는 예외처리 적용
+
+- **로컬 CLI 서브프로세스 실행 방식**
+  - `codex exec --skip-git-repo-check --output-last-message <file>`로 비대화형 실행 후 최종 응답만 별도 파일로 받아 JSON 파싱 (대화형 TUI를 pty로 흉내 내던 이전 방식은 배너/ANSI 노이즈가 섞여 파싱이 불안정했음 → 방식 변경)
+  - 웹 검색 과정에서 codex가 띄우는 자식 프로세스까지 한 번에 정리하기 위해 프로세스 그룹 단위(`start_new_session`)로 실행, 타임아웃 시 `killpg`로 그룹 전체를 종료
+
+---
+
 ### Gemini
 
 활용 상세:
