@@ -12,7 +12,7 @@ API 검색, 활용 가능한 기술 장단점 비교, Docker 가상환경 시뮬
 
 #### 링크
 
-- [claudecode_sessions.zip](../ai-sessions/claudecode_sessions.zip)
+- [claudecode_sessions.zip](./ai-sessions/claudecode_sessions.zip)
 
 ### Gemini
 
