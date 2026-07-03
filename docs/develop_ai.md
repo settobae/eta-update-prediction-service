@@ -147,7 +147,7 @@ API 검색, 활용 가능한 기술 장단점 비교, Docker 가상환경 시뮬
   - 로컬 실행과 Docker Compose 실행 간 의존성 반영 차이 설명
 
 - **백엔드·DB 개발 지원**
-  - PostgreSQL / MongoDB 컨테이너 접속 방법 정리
+  - PostgreSQL(현재 미사용) / MongoDB 컨테이너 접속 방법 정리
   - DB 사용자명, 환경변수, 컨테이너명 기준으로 접속 오류 원인 분석
   - React ↔ FastAPI 간 CORS 설정 문제 해결 방향 제시
 

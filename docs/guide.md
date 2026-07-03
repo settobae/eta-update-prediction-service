@@ -77,6 +77,25 @@ docker compose down
 | AI 서버(vessel-analyzer) | http://localhost:8001/ | 경로/지연 분석 서버 |
 | MongoDB | localhost:27017 | DB 접속용 (Compass 등) |
 
+## (선택) AI 서버 자동 배포 스크립트 (Linux)
+
+위 "실행" 과정 대신, Linux(Ubuntu/Debian) 환경에서는 `vessel_route_analyzer/install_and_run.sh` 스크립트로 AI 서버(`vessel-analyzer`)만 따로 자동 배포할 수 있습니다. 사전 조건(Docker, Codex CLI, 인증)을 자동으로 점검·설치하고 컨테이너까지 띄워주므로, 실행 전 아래 동작을 먼저 확인하세요.
+
+1. **Docker 확인/설치** — Docker가 없으면 `apt-get` 기준으로 자동 설치를 시도합니다.
+2. **Codex CLI 확인/설치** — `codex` 명령이 없으면 npm으로 `@openai/codex`를 전역 설치합니다 (npm이 없으면 Node.js/npm도 함께 설치).
+3. **Codex 인증 확인** — `~/.codex/auth.json` 등 인증 파일 존재 여부를 확인합니다. 없으면 최초 1회 로그인(`codex` 명령)을 유도하고, 인증 없이 계속할지 여부를 물어봅니다.
+4. **컨테이너 실행** — `docker compose up --build -d vessel-analyzer`로 빌드 및 실행합니다.
+5. 완료 후 API 주소(`http://localhost:8001/api/analyze-route`)와 Swagger 문서 경로를 출력합니다.
+
+```bash
+chmod +x vessel_route_analyzer/install_and_run.sh
+./vessel_route_analyzer/install_and_run.sh
+```
+
+> ⚠️ `apt-get`이 있는 Ubuntu/Debian 계열 전용입니다. 다른 OS나 이미 Docker Desktop으로 전체 서비스를 띄운 경우에는 사용할 필요가 없습니다.
+
+> ⚠️ `sudo apt-get install`, `sudo npm install -g` 등 시스템 전역에 영향을 주는 명령이 포함되어 있으므로, 실행 전 스크립트 내용을 한 번 확인하는 것을 권장합니다.
+
 ## 주의사항
 
 - `fe`는 소스 볼륨 마운트(`./fe:/app`)로 실행되므로 코드 수정 시 자동 반영되지만, `package.json` 의존성을 바꾼 경우에는 `docker compose up -d --build fe`로 재빌드가 필요합니다.
