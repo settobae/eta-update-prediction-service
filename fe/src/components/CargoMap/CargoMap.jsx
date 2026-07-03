@@ -7,6 +7,7 @@ import './CargoMap.css'
 
 const ROUTE_SOURCE_ID = 'cargo-route'
 const ROUTE_LAYER_ID = 'cargo-route-line'
+const SHIP_POSITION_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 
 const MARKER_COLOR_START = '#2e7d32'
 const MARKER_COLOR_END = '#c62828'
@@ -326,7 +327,12 @@ function CargoMap({ cargoId, from, stopover, to, center, zoom, route }) {
       map.once('load', renderShipMarker)
     }
 
+    const intervalId = setInterval(() => {
+      if (mapLoadedRef.current) renderShipMarker()
+    }, SHIP_POSITION_REFRESH_INTERVAL_MS)
+
     return () => {
+      clearInterval(intervalId)
       map.off('load', renderShipMarker)
       shipMarkerRef.current?.remove()
       shipMarkerRef.current = null
